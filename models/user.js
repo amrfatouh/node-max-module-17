@@ -5,24 +5,26 @@ const Schema = mongoose.Schema;
 const userSchema = new Schema({
   email: {
     type: String,
-    required: true
+    required: true,
   },
   password: {
     type: String,
-    required: true
+    required: true,
   },
+  token: String,
+  tokenExpirationDate: Date,
   cart: {
     items: [
       {
         productId: {
           type: Schema.Types.ObjectId,
-          ref: 'Product',
-          required: true
+          ref: "Product",
+          required: true,
         },
-        quantity: { type: Number, required: true }
-      }
-    ]
-  }
+        quantity: { type: Number, required: true },
+      },
+    ],
+  },
 });
 
 userSchema.methods.addToCart = function(product) {

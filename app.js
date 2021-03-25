@@ -1,7 +1,6 @@
 const path = require('path');
 
-const express = require('express');
-const bodyParser = require('body-parser');
+const express = require("express");
 const mongoose = require('mongoose');
 const session = require('express-session');
 const MongoDBStore = require('connect-mongodb-session')(session);
@@ -12,7 +11,7 @@ const errorController = require('./controllers/error');
 const User = require('./models/user');
 
 const MONGODB_URI =
-  'mongodb+srv://maximilian:9u4biljMQc4jjqbe@cluster0-ntrwp.mongodb.net/shop';
+  "mongodb+srv://amrfatouh:hello123@cluster0.qfft3.mongodb.net/test?authSource=admin&replicaSet=atlas-r657fx-shard-0&readPreference=primary&appname=MongoDB%20Compass%20Community&ssl=true";
 
 const app = express();
 const store = new MongoDBStore({
@@ -28,7 +27,7 @@ const adminRoutes = require('./routes/admin');
 const shopRoutes = require('./routes/shop');
 const authRoutes = require('./routes/auth');
 
-app.use(bodyParser.urlencoded({ extended: false }));
+app.use(express.urlencoded({ extended: false }));
 app.use(express.static(path.join(__dirname, 'public')));
 app.use(
   session({
@@ -66,10 +65,10 @@ app.use(authRoutes);
 app.use(errorController.get404);
 
 mongoose
-  .connect(MONGODB_URI)
-  .then(result => {
+  .connect(MONGODB_URI, { useNewUrlParser: true, useUnifiedTopology: true })
+  .then((result) => {
     app.listen(3000);
   })
-  .catch(err => {
+  .catch((err) => {
     console.log(err);
   });
