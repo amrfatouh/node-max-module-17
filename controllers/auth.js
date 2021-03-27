@@ -63,31 +63,31 @@ exports.postLogin = (req, res, next) => {
   }
 
   User.findOne({ email: email })
-    .then(user => {
+    .then((user) => {
       if (!user) {
-        req.flash('error', 'Invalid email or password.');
-        return res.redirect('/login');
+        req.flash("error", "Invalid email or password.");
+        return res.redirect("/login");
       }
       bcrypt
         .compare(password, user.password)
-        .then(doMatch => {
+        .then((doMatch) => {
           if (doMatch) {
             req.session.isLoggedIn = true;
             req.session.user = user;
-            return req.session.save(err => {
+            return req.session.save((err) => {
               console.log(err);
-              res.redirect('/');
+              res.redirect("/");
             });
           }
-          req.flash('error', 'Invalid email or password.');
-          res.redirect('/login');
+          req.flash("error", "Invalid email or password.");
+          res.redirect("/login");
         })
-        .catch(err => {
+        .catch((err) => {
           console.log(err);
-          res.redirect('/login');
+          res.redirect("/login");
         });
     })
-    .catch(err => console.log(err));
+    .catch((err) => next(new Error(err)));
 };
 
 exports.postSignup = (req, res, next) => {
@@ -135,13 +135,9 @@ exports.postSignup = (req, res, next) => {
           //   html: "<h1>You successfully signed up!</h1>",
           // });
         })
-        .catch((err) => {
-          console.log(err);
-        });
+        .catch((err) => next(new Error(err)));
     })
-    .catch((err) => {
-      console.log(err);
-    });
+    .catch((err) => next(new Error(err)));
 };
 
 exports.postLogout = (req, res, next) => {
@@ -196,10 +192,10 @@ exports.postReset = (req, res, next) => {
             return req.session.save();
           })
           .then(() => res.redirect("/"))
-          .catch((err) => console.log(err));
+          .catch((err) => next(new Error(err)));
       });
     })
-    .catch((err) => console.log(err));
+    .catch((err) => next(new Error(err)));
 };
 
 exports.getNewPassword = (req, res, next) => {
@@ -242,5 +238,5 @@ exports.postNewPassword = (req, res, next) => {
       return user.save();
     })
     .then(() => res.redirect("/login"))
-    .catch((err) => console.log(err));
+    .catch((err) => next(new Error(err)));
 };
