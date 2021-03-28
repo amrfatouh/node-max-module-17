@@ -1,5 +1,10 @@
-const Product = require('../models/product');
-const Order = require('../models/order');
+const fs = require("fs");
+const path = require("path");
+
+const PDFDocument = require("pdfkit")
+
+const Product = require("../models/product");
+const Order = require("../models/order");
 
 exports.getProducts = (req, res, next) => {
   Product.find()
@@ -57,12 +62,12 @@ exports.getCart = (req, res, next) => {
 exports.postCart = (req, res, next) => {
   const prodId = req.body.productId;
   Product.findById(prodId)
-    .then(product => {
+    .then((product) => {
       return req.user.addToCart(product);
     })
-    .then(result => {
+    .then((result) => {
       console.log(result);
-      res.redirect('/cart');
+      res.redirect("/cart");
     });
 };
 
@@ -112,4 +117,34 @@ exports.getOrders = (req, res, next) => {
       });
     })
     .catch((err) => next(new Error(err)));
+};
+
+exports.getInvoice = (req, res, next) => {
+  const orderId = req.params.orderId;
+  Order.findOne({_id: orderId, "user.userId": req.user._id}).then(order => {
+    if (!order) return next(new Error("couldn't fetch the order"));
+
+    let invoiceName = "invoice-" + order._id + ".pdf";
+    let invoicePath = path.join("data", "invoices", invoiceName);
+
+    res.setHeader('Content-Type', 'application/pdf');
+    res.setHeader( 'Content-Disposition', 'inline; filename="' + invoiceName + '"' );
+    
+    let pdfDoc = new PDFDocument();
+    pdfDoc.pipe(fs.createWriteStream(invoicePath));
+    pdfDoc.pipe(res);
+
+    pdfDoc.font('Courier').fontSize(20).text('Invoice');
+    pdfDoc.text("-".repeat("Invoice".length));
+    let totalPrice = 0;
+    order.products.forEach(prod => {
+      totalPrice += prod.product.price * prod.quantity;
+      pdfDoc.fontSize(14).text(`${prod.product.title}: ${prod.quantity} x ${prod.product.price}`);
+    });
+    totalPrice = totalPrice.toFixed(2);
+    pdfDoc.text("-".repeat(`total price: $${totalPrice}`.length));
+    pdfDoc.text(`total price: $${totalPrice}`)
+    pdfDoc.end();
+    
+  }).catch(err => next(err))
 };

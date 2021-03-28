@@ -1,6 +1,8 @@
 const { validationResult } = require('express-validator');
 const Product = require('../models/product');
 
+const { deleteFile } = require("../util/file");
+
 exports.getAddProduct = (req, res, next) => {
   res.render('admin/edit-product', {
     pageTitle: 'Add Product',
@@ -14,20 +16,32 @@ exports.getAddProduct = (req, res, next) => {
 
 exports.postAddProduct = (req, res, next) => {
   const title = req.body.title;
-  const imageUrl = req.body.imageUrl;
+  const image = req.file;
   const price = req.body.price;
   const description = req.body.description;
 
-  const errors = validationResult(req);
-  if (!errors.isEmpty()) {
-    return res.status(422).render('admin/edit-product', {
-      pageTitle: 'Add Product',
-      path: '/admin/add-product',
+  if (!image) {
+    return res.status(422).render("admin/edit-product", {
+      pageTitle: "Add Product",
+      path: "/admin/add-product",
       editing: false,
       isInvalid: true,
-      oldInput: { title, imageUrl, price, description },
+      oldInput: { title, price, description },
+      errorMessage: "Please select an image of (png/jpg/jpeg) formats",
+      errorSources: [],
+    });
+  }
+
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    return res.status(422).render("admin/edit-product", {
+      pageTitle: "Add Product",
+      path: "/admin/add-product",
+      editing: false,
+      isInvalid: true,
+      oldInput: { title, price, description },
       errorMessage: errors.array()[0].msg,
-      errorSources: errors.array().map(e => e.param)
+      errorSources: errors.array().map((e) => e.param),
     });
   }
 
@@ -35,13 +49,12 @@ exports.postAddProduct = (req, res, next) => {
     title: title,
     price: price,
     description: description,
-    imageUrl: imageUrl,
-    userId: req.user
+    imageUrl: image.path,
+    userId: req.user,
   });
   product
     .save()
     .then((result) => {
-      // console.log(result);
       console.log("Created Product");
       res.redirect("/admin/products");
     })
@@ -69,11 +82,14 @@ exports.getEditProduct = (req, res, next) => {
         errorSources: [],
       });
     })
-    .catch((err) => next(new Error(err)));
+    .catch((err) => {
+      next(new Error(err));
+    });
 };
 
 exports.postEditProduct = (req, res, next) => {
-  const {productId, title, price, imageUrl, description} = req.body
+  const { productId, title, price, description } = req.body;
+  const image = req.file;
 
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
@@ -92,6 +108,11 @@ exports.postEditProduct = (req, res, next) => {
     .then((product) => {
       if (req.user._id.toString() !== product.userId.toString()) {
         return res.redirect("/admin/products");
+      }
+      let imageUrl = product.imageUrl;
+      if (image) {
+        deleteFile(imageUrl);
+        imageUrl = image.path;
       }
       product.title = title;
       product.price = price;
@@ -120,7 +141,14 @@ exports.getProducts = (req, res, next) => {
 
 exports.postDeleteProduct = (req, res, next) => {
   const prodId = req.body.productId;
-  Product.deleteOne({ _id: prodId, userId: req.user._id })
+  Product.findOne({ _id: prodId, userId: req.user._id })
+    .then((product) => {
+      if (!product) {
+        return next(new Error("couldn't fetch product"));
+      }
+      deleteFile(product.imageUrl);
+      return Product.deleteOne({ _id: prodId, userId: req.user._id });
+    })
     .then(() => {
       console.log("DESTROYED PRODUCT");
       res.redirect("/admin/products");

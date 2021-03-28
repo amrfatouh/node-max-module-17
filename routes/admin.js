@@ -23,7 +23,6 @@ router.post(
       })
       .withMessage("please enter a valid title with no symbols")
       .trim(),
-    body("imageUrl", "enter a valid URL").isURL().trim(),
     body("price", "enter a valid price").isFloat(),
     body("description")
       .isLength({ min: 5, max: 400 })
@@ -47,7 +46,6 @@ router.post(
       })
       .withMessage("please enter a valid title with no symbols")
       .trim(),
-    body("imageUrl", "enter a valid URL").isURL().trim(),
     body("price", "enter a valid price").isFloat(),
     body("description")
       .isLength({ min: 5, max: 400 })
