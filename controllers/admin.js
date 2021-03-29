@@ -1,16 +1,17 @@
-const { validationResult } = require('express-validator');
-const Product = require('../models/product');
+const { response } = require("express");
+const { validationResult } = require("express-validator");
+const Product = require("../models/product");
 
 const { deleteFile } = require("../util/file");
 
 exports.getAddProduct = (req, res, next) => {
-  res.render('admin/edit-product', {
-    pageTitle: 'Add Product',
-    path: '/admin/add-product',
+  res.render("admin/edit-product", {
+    pageTitle: "Add Product",
+    path: "/admin/add-product",
     editing: false,
     isInvalid: false,
     errorMessage: null,
-    errorSources: []
+    errorSources: [],
   });
 };
 
@@ -64,7 +65,7 @@ exports.postAddProduct = (req, res, next) => {
 exports.getEditProduct = (req, res, next) => {
   const editMode = req.query.edit;
   if (!editMode) {
-    return res.redirect('/');
+    return res.redirect("/");
   }
   const prodId = req.params.productId;
   Product.findById(prodId)
@@ -93,14 +94,14 @@ exports.postEditProduct = (req, res, next) => {
 
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
-    return res.status(422).render('admin/edit-product', {
-      pageTitle: 'Edit Product',
-      path: '/admin/edit-product',
+    return res.status(422).render("admin/edit-product", {
+      pageTitle: "Edit Product",
+      path: "/admin/edit-product",
       editing: true,
       isInvalid: true,
-      oldInput: {_id: productId, title, price, imageUrl, description},
+      oldInput: { _id: productId, title, price, imageUrl, description },
       errorMessage: errors.array()[0].msg,
-      errorSources: errors.array().map(e => e.param)
+      errorSources: errors.array().map((e) => e.param),
     });
   }
 
@@ -140,7 +141,7 @@ exports.getProducts = (req, res, next) => {
 };
 
 exports.postDeleteProduct = (req, res, next) => {
-  const prodId = req.body.productId;
+  const prodId = req.params.productId;
   Product.findOne({ _id: prodId, userId: req.user._id })
     .then((product) => {
       if (!product) {
@@ -151,7 +152,10 @@ exports.postDeleteProduct = (req, res, next) => {
     })
     .then(() => {
       console.log("DESTROYED PRODUCT");
-      res.redirect("/admin/products");
+      res.status(200).json({ message: "success" });
     })
-    .catch((err) => next(new Error(err)));
+    .catch((err) => {
+      console.log(err);
+      res.status(500).json({ message: "failure" });
+    });
 };
