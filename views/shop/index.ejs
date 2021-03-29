@@ -33,5 +33,6 @@
         <% } else { %>
             <h1>No Products Found!</h1>
         <% } %>
+        <%- include('../includes/pagination.ejs', {pagination: pagination}) %>
     </main>
 <%- include('../includes/end.ejs') %>

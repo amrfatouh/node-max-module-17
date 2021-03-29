@@ -1,0 +1,17 @@
+<div>
+  <% if (pagination.currentPage !== 1 && pagination.previousPage !== 1 ) { %>
+  <a href="?page=1">1</a>
+  <%= pagination.previousPage > 2 ? ".." : null %>
+  <% } %>
+  <% if (pagination.hasPreviousPage) { %>
+  &nbsp;<a href="?page=<%= pagination.previousPage %>"><%= pagination.previousPage %></a>
+  <% } %>
+  &nbsp;<a href="?page=<%= pagination.currentPage %>"><%= pagination.currentPage %></a>
+  <% if (pagination.hasNextPage) { %>
+  &nbsp;<a href="?page=<%= pagination.nextPage %>"><%= pagination.nextPage %></a>
+  <% } %>
+  <% if (pagination.currentPage !== pagination.lastPage && pagination.nextPage !== pagination.lastPage) { %>
+  <%= pagination.nextPage < pagination.lastPage - 1 ? ".." : null %>
+  &nbsp;<a href="?page=<%= pagination.lastPage %>"><%= pagination.lastPage %></a>
+  <% } %>
+</div>

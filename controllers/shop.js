@@ -6,14 +6,32 @@ const PDFDocument = require("pdfkit")
 const Product = require("../models/product");
 const Order = require("../models/order");
 
+const ITEMS_PER_PAGE = 1;
+
 exports.getProducts = (req, res, next) => {
+  const pageNum = +req.query.page || 1;
+  let prodNum;
   Product.find()
+    .countDocuments().then((docNum) => {
+      prodNum = docNum;
+      return Product.find()
+        .skip((pageNum - 1) * ITEMS_PER_PAGE)
+        .limit(ITEMS_PER_PAGE);
+    })
     .then((products) => {
-      console.log(products);
+      // pagination calculations
+      let currentPage = pageNum;
+      let nextPage = pageNum + 1;
+      let previousPage = pageNum - 1;
+      let lastPage = Math.ceil(prodNum / ITEMS_PER_PAGE);
+      let hasNextPage = currentPage < lastPage;
+      let hasPreviousPage = currentPage > 1;
       res.render("shop/product-list", {
         prods: products,
-        pageTitle: "All Products",
+        pageTitle: "Products",
         path: "/products",
+        pagination: { currentPage, nextPage, previousPage,
+                      lastPage, hasNextPage, hasPreviousPage}
       });
     })
     .catch((err) => next(new Error(err)));
@@ -33,12 +51,29 @@ exports.getProduct = (req, res, next) => {
 };
 
 exports.getIndex = (req, res, next) => {
+  const pageNum = +req.query.page || 1;
+  let prodNum;
   Product.find()
+    .countDocuments().then((docNum) => {
+      prodNum = docNum;
+      return Product.find()
+        .skip((pageNum - 1) * ITEMS_PER_PAGE)
+        .limit(ITEMS_PER_PAGE);
+    })
     .then((products) => {
+      // pagination calculations
+      let currentPage = pageNum;
+      let nextPage = pageNum + 1;
+      let previousPage = pageNum - 1;
+      let lastPage = Math.ceil(prodNum / ITEMS_PER_PAGE);
+      let hasNextPage = currentPage < lastPage;
+      let hasPreviousPage = currentPage > 1;
       res.render("shop/index", {
         prods: products,
         pageTitle: "Shop",
         path: "/",
+        pagination: { currentPage, nextPage, previousPage,
+                      lastPage, hasNextPage, hasPreviousPage}
       });
     })
     .catch((err) => next(new Error(err)));
