@@ -23,15 +23,21 @@ exports.getProducts = (req, res, next) => {
       let currentPage = pageNum;
       let nextPage = pageNum + 1;
       let previousPage = pageNum - 1;
-      let lastPage = Math.ceil(prodNum / ITEMS_PER_PAGE);
+      let lastPage = Math.ceil(prodNum / ITEMS_PER_PAGE) || 1; //last page can't be 0
       let hasNextPage = currentPage < lastPage;
       let hasPreviousPage = currentPage > 1;
       res.render("shop/product-list", {
         prods: products,
         pageTitle: "Products",
         path: "/products",
-        pagination: { currentPage, nextPage, previousPage,
-                      lastPage, hasNextPage, hasPreviousPage}
+        pagination: {
+          currentPage,
+          nextPage,
+          previousPage,
+          lastPage,
+          hasNextPage,
+          hasPreviousPage,
+        },
       });
     })
     .catch((err) => next(new Error(err)));
@@ -65,15 +71,21 @@ exports.getIndex = (req, res, next) => {
       let currentPage = pageNum;
       let nextPage = pageNum + 1;
       let previousPage = pageNum - 1;
-      let lastPage = Math.ceil(prodNum / ITEMS_PER_PAGE);
+      let lastPage = Math.ceil(prodNum / ITEMS_PER_PAGE) || 1; //last page can't be 0
       let hasNextPage = currentPage < lastPage;
       let hasPreviousPage = currentPage > 1;
       res.render("shop/index", {
         prods: products,
         pageTitle: "Shop",
         path: "/",
-        pagination: { currentPage, nextPage, previousPage,
-                      lastPage, hasNextPage, hasPreviousPage}
+        pagination: {
+          currentPage,
+          nextPage,
+          previousPage,
+          lastPage,
+          hasNextPage,
+          hasPreviousPage,
+        },
       });
     })
     .catch((err) => next(new Error(err)));

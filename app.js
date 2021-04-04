@@ -1,4 +1,5 @@
 const path = require('path');
+const fs = require("fs");
 
 const express = require("express");
 const mongoose = require('mongoose');
@@ -6,13 +7,15 @@ const session = require('express-session');
 const MongoDBStore = require('connect-mongodb-session')(session);
 const csrf = require('csurf');
 const flash = require('connect-flash');
-var multer = require("multer");
+const multer = require("multer");
+const helmet = require("helmet");
+const compression = require("compression");
+const morgan = require("morgan");
 
 const errorController = require('./controllers/error');
 const User = require('./models/user');
 
-const MONGODB_URI =
-  "mongodb+srv://amrfatouh:hello123@cluster0.qfft3.mongodb.net/test?authSource=admin&replicaSet=atlas-r657fx-shard-0&readPreference=primary&appname=MongoDB%20Compass%20Community&ssl=true";
+const MONGODB_URI = `mongodb+srv://${process.env.MONGO_USER}:${process.env.MONGO_PASSWORD}@cluster0.qfft3.mongodb.net/${process.env.MONGO_DEFAULT_DB}?authSource=admin&replicaSet=atlas-r657fx-shard-0&readPreference=primary&appname=MongoDB%20Compass%20Community&ssl=true`;
 
 const app = express();
 const store = new MongoDBStore({
@@ -20,6 +23,14 @@ const store = new MongoDBStore({
   collection: 'sessions'
 });
 const csrfProtection = csrf();
+
+let logStream = fs.createWriteStream(path.join(__dirname, "access.log"), {
+  flags: "a",
+});
+
+app.use(helmet());
+app.use(compression());
+app.use(morgan("combined", { stream: logStream }));
 
 app.set('view engine', 'ejs');
 app.set('views', 'views');
@@ -97,7 +108,7 @@ app.use((error, req, res, next) => {
 mongoose
   .connect(MONGODB_URI, { useNewUrlParser: true, useUnifiedTopology: true })
   .then((result) => {
-    app.listen(3000);
+    app.listen(process.env.PORT || 3000);
   })
   .catch((err) => {
     console.log(err);

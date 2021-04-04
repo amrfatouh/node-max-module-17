@@ -1,0 +1,7 @@
+{
+  "env": {
+    "MONGO_USER": "amrfatouh",
+    "MONGO_PASSWORD": "hello123",
+    "MONGO_DEFAULT_DB": "fatouh-shop"
+  }
+}
